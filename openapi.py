@@ -1,32 +1,48 @@
 import streamlit as st
 import openai
 
-# OpenAI API Key를 입력받는 함수
+# API 키 입력을 받는 함수
 def get_api_key():
-    return st.text_input("Enter OpenAI API Key:", type="password")
+    api_key = st.text_input("Enter your OpenAI API Key", type="password")
+    if api_key:
+        st.session_state["api_key"] = api_key
+    return st.session_state.get("api_key", "")
 
-# @st.cache_data를 사용하여 캐싱된 결과를 반환하는 함수
+# 캐시된 함수: 사용자 질문에 대한 응답을 캐싱
 @st.cache_data
 def get_gpt_response(api_key, user_input):
     openai.api_key = api_key
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": user_input}]
+        messages=[
+            {"role": "user", "content": user_input}
+        ]
     )
     return response.choices[0].message['content']
 
-# 세션 상태에 API Key를 저장
-if "api_key" not in st.session_state:
-    st.session_state["api_key"] = ""
-
-if st.session_state["api_key"] == "":
-    st.session_state["api_key"] = get_api_key()
-
-if st.session_state["api_key"]:
+def main():
+    st.title("GPT-3.5-turbo Response Generator")
+    
+    # API 키를 입력받고 세션 상태에 저장
+    api_key = get_api_key()
+    if not api_key:
+        st.warning("Please enter your OpenAI API Key.")
+        return
+    
+    # 사용자 질문 입력 받기
     user_input = st.text_input("Enter your question:")
-    if st.button("Submit"):
+    
+    # 응답 생성 버튼
+    if st.button("Get Response"):
         if user_input:
-            response = get_gpt_response(st.session_state["api_key"], user_input)
-            st.write(response)
+            try:
+                # 캐시된 함수 호출
+                response = get_gpt_response(api_key, user_input)
+                st.text_area("Response from GPT-3.5-turbo:", response, height=200)
+            except Exception as e:
+                st.error(f"Error: {e}")
         else:
-            st.write("Please enter a question.")
+            st.warning("Please enter a question.")
+
+if __name__ == "__main__":
+    main()
