@@ -1,48 +1,37 @@
 import streamlit as st
 import openai
 
-# API 키 입력을 받는 함수
-def get_api_key():
-    api_key = st.text_input("Enter your OpenAI API Key", type="password")
-    if api_key:
-        st.session_state["api_key"] = api_key
-    return st.session_state.get("api_key", "")
+# 세션 상태 초기화
+if "api_key" not in st.session_state:
+    st.session_state["api_key"] = ""
 
-# 캐시된 함수: 사용자 질문에 대한 응답을 캐싱
-@st.cache_data
-def get_gpt_response(api_key, user_input):
+# OpenAI API Key 입력
+api_key = st.text_input("OpenAI API Key", type="password", value=st.session_state["api_key"])
+
+# API Key 저장
+st.session_state["api_key"] = api_key
+
+# OpenAI API 클라이언트 생성
+if api_key:
     openai.api_key = api_key
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "user", "content": user_input}
-        ]
-    )
-    return response['choices'][0]['message']['content']
+else:
+    st.error("OpenAI API Key를 입력하세요.")
 
-def main():
-    st.title("GPT-3.5-turbo Response Generator")
-    
-    # API 키를 입력받고 세션 상태에 저장
-    api_key = get_api_key()
-    if not api_key:
-        st.warning("Please enter your OpenAI API Key.")
-        return
-    
-    # 사용자 질문 입력 받기
-    user_input = st.text_input("Enter your question:")
-    
-    # 응답 생성 버튼
-    if st.button("Get Response"):
-        if user_input:
-            try:
-                # 캐시된 함수 호출
-                response = get_gpt_response(api_key, user_input)
-                st.text_area("Response from GPT-3.5-turbo:", response, height=200)
-            except Exception as e:
-                st.error(f"Error: {e}")
-        else:
-            st.warning("Please enter a question.")
+# 질문 입력
+question = st.text_input("질문을 입력하세요.")
 
-if __name__ == "__main__":
-    main()
+# 메모라이징
+@st.cache_data
+def get_answer(question):
+    # GPT-3.5 모델에 질문 전송
+    response = openai.Completion.create(engine="davinci-3", prompt=question)
+
+    # 응답 추출
+    answer = response["choices"][0]["text"]
+    return answer
+
+# 응답 출력
+if question:
+    answer = get_answer(question)
+    st.success(f"GPT-3.5 응답: {answer}")
+
