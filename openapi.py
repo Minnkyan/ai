@@ -18,7 +18,7 @@ def get_gpt_response(api_key, user_input):
             {"role": "user", "content": user_input}
         ]
     )
-    return response.choices[0].message['content']
+    return response['choices'][0]['message']['content']
 
 def main():
     st.title("GPT-3.5-turbo Response Generator")
