@@ -1,6 +1,7 @@
 import streamlit as st
 import openai
 from openai import OpenAIError
+pip install openai== 0.28
 
 # OpenAI API 키를 입력받고 session_state에 저장
 if 'api_key' not in st.session_state:
