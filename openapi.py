@@ -1,38 +1,25 @@
+from openai import OpenAI
 import streamlit as st
-import openai
-from openai import OpenAIError
-pip install openai== 0.28
 
-# OpenAI API 키를 입력받고 session_state에 저장
-if 'api_key' not in st.session_state:
-    st.session_state['api_key'] = ''
+with st.sidebar:
+    openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
 
-st.session_state['api_key'] = st.text_input("Enter your OpenAI API key:", type="password", value=st.session_state['api_key'])
+st.title("Web App")
+if "messages" not in st.session_state:
+    st.session_state["messages"] = [{"role": "assistant"}]
 
-# OpenAI API 키가 없으면 실행 중지
-if not st.session_state['api_key']:
-    st.warning("Please enter your OpenAI API key to continue.")
-    st.stop()
+for msg in st.session_state.messages:
+    st.chat_message(msg["role"]).write(msg["content"])
 
-# OpenAI API 설정
-openai.api_key = st.session_state['api_key']
+if prompt := st.chat_input():
+    if not openai_api_key:
+        st.info("OpenAI API 키를 입력하세요.")
+        st.stop()
 
-# 캐시된 데이터 함수
-@st.cache_data(ttl=3600)
-def get_gpt_response(prompt):
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response['choices'][0]['message']['content']
-    except OpenAIError as e:
-        return f"Error: {str(e)}"
-
-# 사용자 입력 받기
-prompt = st.text_input("Ask a question to GPT-3.5-turbo:")
-
-# 질문이 입력되면 응답 받기
-if prompt:
-    response = get_gpt_response(prompt)
-    st.text_area("GPT-3.5-turbo response:", value=response, height=200)
+    client = OpenAI(api_key=openai_api_key)
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.chat_message("user").write(prompt)
+    response = client.chat.completions.create(model="gpt-4o", messages=st.session_state.messages)
+    msg = response.choices[0].message.content
+    st.session_state.messages.append({"role": "assistant", "content": msg})
+    st.chat_message("assistant").write(msg)
