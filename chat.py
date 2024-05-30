@@ -2,10 +2,6 @@ import streamlit as st
 import threading
 from openai import OpenAI
 
-# Placeholder for thread reference
-global thread_reference
-thread_reference = None
-
 def run_thread(prompt, openai_api_key):
     client = OpenAI(api_key=openai_api_key)
     response = client.chat.completions.create(model="gpt-4", messages=st.session_state.messages)
@@ -13,15 +9,6 @@ def run_thread(prompt, openai_api_key):
     st.session_state.messages.append({"role": "assistant", "content": msg})
     st.chat_message("assistant").write(msg)
 
-# Clear button action
-def clear_thread():
-    global thread_reference
-    if thread_reference is not None:
-        if thread_reference.is_alive():
-            # Thread termination logic can go here if required
-            pass
-    st.session_state.messages = [{"role": "assistant", "content": "무엇을 도와드릴까요?"}]
-    st.experimental_rerun()
 
 # Exit button action
 def exit_app():
