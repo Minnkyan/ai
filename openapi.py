@@ -24,20 +24,4 @@ if prompt := st.chat_input():
     st.session_state.messages.append({"role": "assistant", "content": msg})
     st.chat_message("assistant").write(msg)
 
-st.sidebar.markdown("[2번째 페이지로 이동](./)")
 
-st.title("DALL-E 이미지 생성기")
-prompt = st.text_input("프롬프트를 입력하세요:", st.session_state['prompt'])
-
-if st.button("이미지 생성"):
-    if prompt:
-        st.session_state['prompt'] = prompt
-        prompt_hash = get_prompt_hash(prompt)
-        
-        if prompt_hash in st.session_state['image_cache']:
-            image_url = st.session_state['image_cache'][prompt_hash]
-        else:
-            image_url = generate_image(prompt)
-            st.session_state['image_cache'][prompt_hash] = image_url
-
-        st.image(image_url, caption=prompt)
