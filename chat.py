@@ -1,53 +1,34 @@
-!pip install openai
+from openai import OpenAI
 import streamlit as st
-from openai import APIException, openai
-import threading
 
-class ChatThread(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.messages = []
+st.title("ChatBot")
 
-    def run(self):
-        try:
-            self.assistant = openai.ChatCompletion.create(
-                model="gpt-4o", messages=self.messages)
-        except APIException as e:
-            st.error(f"An error occurred: {e}")
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-    def append_message(self, role, content):
-        self.messages.append({"role": role, "content": content})
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = "gpt-3.5-turbo"
 
-def clear_thread(thread):
-    if thread is not None and thread.is_alive():
-        thread.assistant.delete()
-        thread.join()
-        st.success("Chat cleared and new thread started.")
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-def main():
-    st.title("OpenAI Assistant Chat")
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-    thread = None
+if prompt := st.chat_input("무엇을 도와드릴까요?"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-    if st.button("Start Chat"):
-        thread = ChatThread()
-        thread.start()
-
-    if thread is not None and thread.is_alive():
-        user_input = st.text_input("You:", key="user_input")
-        if st.button("Send"):
-            if user_input:
-                thread.append_message("user", user_input)
-                st.write("You:", user_input)
-                st.write("Assistant:", thread.assistant.messages[-1]["content"])
-
-    if st.button("Clear Chat"):
-        clear_thread(thread)
-
-    if st.button("Exit Chat"):
-        clear_thread(thread)
-        st.stop()
-
-if __name__ == "__main__":
-    main()
+    with st.chat_message("assistant"):
+        stream = client.chat.completions.create(
+            model=st.session_state["openai_model"],
+            messages=[
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.messages
+            ],
+            stream=True,
+        )
+        response = st.write_stream(stream)
+    st.session_state.messages.append({"role": "assistant", "content": response})
   
