@@ -1,4 +1,4 @@
-pip install openai
+!pip install openai
 import streamlit as st
 from openai import APIException, openai
 import threading
