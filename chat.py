@@ -4,7 +4,7 @@ import streamlit as st
 with st.sidebar:
     openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
 
-st.title("💬 Chatbot")
+st.title("챗봇")
 if "messages" not in st.session_state:
     st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
@@ -13,7 +13,7 @@ for msg in st.session_state.messages:
 
 if prompt := st.chat_input():
     if not openai_api_key:
-        st.info("Please add your OpenAI API key to continue.")
+        st.info("OpenAI API 키를 입력하세요.")
         st.stop()
 
     client = OpenAI(api_key=openai_api_key)
