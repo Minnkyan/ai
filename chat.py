@@ -6,14 +6,14 @@ with st.sidebar:
 
 st.title("💬 Chatbot")
 if "messages" not in st.session_state:
-    st.session_state["messages"] = [{"role": "assistant", "content": "무엇을 도와드릴까요?"}]
+    st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
 if prompt := st.chat_input():
     if not openai_api_key:
-        st.info("OpenAI API키를 입력하세요.")
+        st.info("Please add your OpenAI API key to continue.")
         st.stop()
 
     client = OpenAI(api_key=openai_api_key)
