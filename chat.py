@@ -1,34 +1,43 @@
-from openai import OpenAI
 import streamlit as st
+import openai
+import requests
+from PIL import Image
+from io import BytesIO
 
-st.title("ChatBot")
+st.title("OpenAI API 웹 앱")
+st.write("GPT-3.5-turbo 및 DALL-E를 사용하여 텍스트와 이미지를 생성합니다.")
 
-client = OpenAI(api_key=st.secrets["sk-proj-YHmgSQysIF0PgkKGetMET3BlbkFJ97fuUnc24Gk84RPYPLyO"])
+api_key = st.text_input("OpenAI API Key를 입력하세요:", type="password")
 
-if "openai_model" not in st.session_state:
-    st.session_state["openai_model"] = "gpt-3.5-turbo"
+if api_key:
+    openai.api_key = api_key
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+    user_prompt = st.text_input("프롬프트를 입력하세요:")
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-if prompt := st.chat_input("무엇을 도와드릴까요?"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    with st.chat_message("assistant"):
-        stream = client.chat.completions.create(
-            model=st.session_state["openai_model"],
+    if user_prompt:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
             messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": user_prompt}
+            ]
         )
-        response = st.write_stream(stream)
-    st.session_state.messages.append({"role": "assistant", "content": response})
-  
+
+        gpt_response = response['choices'][0]['message']['content']
+        st.subheader("GPT-3.5-turbo의 응답:")
+        st.write(gpt_response)
+
+        st.subheader("DALL-E로 생성한 이미지:")
+
+        try:
+            dalle_response = openai.Image.create(
+                prompt=user_prompt,
+                n=1,
+                size="512x512"
+            )
+            image_url = dalle_response['data'][0]['url']
+            response = requests.get(image_url)
+            img = Image.open(BytesIO(response.content))
+            st.image(img, caption='DALL-E 이미지', use_column_width=True)
+        except Exception as e:
+            st.error(f"이미지 생성 중 오류가 발생했습니다: {e}")
