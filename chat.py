@@ -1,5 +1,14 @@
 from openai import OpenAI
 import streamlit as st
+from dall_e         import map_pixels, unmap_pixels
+from dall_e.encoder import DALLEncoder
+
+encoder = DALLEncoder()
+
+def generate_image(text):
+    vector = encoder.encode_text(text)
+    image = encoder.decode(vector)
+    return image
 
 with st.sidebar:
     openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
@@ -23,6 +32,26 @@ if prompt := st.chat_input():
     msg = response.choices[0].message.content
     st.session_state.messages.append({"role": "assistant", "content": msg})
     st.chat_message("assistant").write(msg)
+
+def second_page():
+    st.title('Second Page')
+
+    user_input = st.text_input('Enter text for image generation:')
+
+    if st.button('Generate Image'):
+        image = generate_image(user_input)
+        st.image(image, caption='Generated Image', use_column_width=True)
+
+def main():
+    page = st.sidebar.radio("Go to", ["First Page", "Second Page"])
+
+    if page == "First Page":
+        first_page()
+    elif page == "Second Page":
+        second_page()
+
+if __name__ == '__main__':
+    main()
 
 
 
