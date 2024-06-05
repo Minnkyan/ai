@@ -1,57 +1,34 @@
-import streamlit as st
-def takeInput():
-    # Title
-    st.title('Make me an Image')
-    # Ask for the API key
-    api_key = st.text_input("Enter your OpenAI API key:", type="password")
-
-    # Ask for the model choice
-    model_choice = st.selectbox(
-        "Which Dall E model would you like to use? ",
-        ("DALL·E 3", "DALL·E 2"),
-        index=None,
-        key="model_choice",
-        placeholder="Select DALL·E model",
-    )
-    # Display user choice
-    st.write('You selected:', model_choice)
-
-    # Logic if no model is selected
-    if model_choice == "DALL·E 3":
-        model_choice = "dall-e-3"
-    else:
-        model_choice = "dall-e-2"
-
-    # Takes the user prompt
-
-    prompt = st.text_input("Enter a prompt:", key="user_prompt_input")
-
-    return model_choice, prompt, api_key
-
-import streamlit as st
 import requests
-from io import BytesIO
-from PIL import Image
+import base64
+import streamlit as st
 
-def generateImage(client, model_choice, prompt):
-    if st.button("Generate Image"):
-        # create the image generation request
-        response = client.images.generate(
-            model=model_choice,
-            prompt=prompt,
-            size="1024x1024",
-            quality="standard",
-            n=1 #This can be modified but currently DALL.E 3 only supports 1
-        )
-        image_url = response.data[0].url
-        print("Generated Image URL:", image_url)
+URL = "https://horrible-mole-67.loca.lt"
+headers = {'Bypass-Tunnel-Reminder': "go",
+           'mode': 'no-cors'}
 
-        response = requests.get(image_url)
-        img = Image.open(BytesIO(response.content))
-
-        # Display the image
-        st.image(img)
-
+def check_if_valid_backend(url):
+    try:
+        resp = requests.get(url, timeout=5, headers=headers)
+        return resp.status_code == 200
+    except requests.exceptions.Timeout:
+        return False
+    
+def call_dalle(url, text, num_images=1):
+    data = {"text": text, "num_images": num_images}
+    resp = requests.post(url + "/dalle", headers=headers, json=data)
+    if resp.status_code == 200:
+        return resp
+    
+def create_and_show_images(text, num_images):
+    valid = check_if_valid_backend(URL)
+    if not valid:
+        st.write("Backend service is not running")
+    else:
+        resp = call_dalle(URL, text, num_images)
+        if resp is not None:
+            for data in resp.json():
+                img_data = base64.b64decode(data)
+                st.image(img_data)
 
 
 
