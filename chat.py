@@ -1,3 +1,4 @@
+import streamlit as st
 def takeInput():
     # Title
     st.title('Make me an Image')
