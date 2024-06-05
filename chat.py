@@ -3,7 +3,6 @@ import streamlit as st
 
 with st.sidebar:
     openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password")
-    image = st.session_state["messages"] = [{"role": "assistant", "content": "안녕하세요! 무엇을 도와드릴까요?"}]
 
 st.title("챗봇")
 if "messages" not in st.session_state:
