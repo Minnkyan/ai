@@ -12,7 +12,7 @@ def load_data(file_path):
         st.error("JSON 파일을 읽는 중 오류가 발생했습니다.")
         return None
 
-data = load_data('book_data.json')
+data = load_data('book20.json')
 
 if data:
     titles = data.get('title', [])
