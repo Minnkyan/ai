@@ -1,7 +1,6 @@
 import streamlit as st
 import json
 
-# JSON 파일을 읽어오는 함수, 오류 처리 포함
 def load_data(file_path):
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -13,7 +12,7 @@ def load_data(file_path):
         st.error("JSON 파일을 읽는 중 오류가 발생했습니다.")
         return None
 
-data = load_data(PASS)
+data = load_data('book_data.json')
 
 if data:
     titles = data.get('title', [])
