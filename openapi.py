@@ -1,6 +1,6 @@
 import streamlit as st
 import json
-from openai import OpenAI
+import openai
 
 def load_data(file_path):
     try:
@@ -83,44 +83,48 @@ if data:
         st.warning("Please enter your OpenAI API key.")
         st.stop()
 
-    client = OpenAI(api_key=api_key)
+    openai.api_key = api_key
 
     def get_similar_books(input_text):
-        vector_store = client.vector_stores.create(name="BOOK")
+        try:
+            vector_store = openai.VectorStore.create(name="BOOK")
 
-        with open('./book20_toc.json', "rb") as file_stream:
-            client.vector_stores.file_batches.upload_and_poll(
-                vector_store_id=vector_store.id,
-                files=[file_stream]
+            with open('./book20_toc.json', "rb") as file_stream:
+                openai.File.create(file=file_stream, purpose='search')
+
+            assistant = openai.Assistant.create(
+                instructions='당신은 사서입니다. 첨부 파일의 정보를 이용해 응답하세요.',
+                model="gpt-4-turbo",
+                tools=[{"type": "file_search"}],
+                tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}}
             )
 
-        assistant = client.assistants.create(
-            instructions='당신은 사서입니다. 첨부 파일의 정보를 이용해 응답하세요.',
-            model="gpt-4-turbo",
-            tools=[{"type": "file_search"}],
-            tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}}
-        )
+            thread = openai.Thread.create(
+                messages=[{"role": "user", "content": f"입력 내용과 유사한 책을 첨부 파일에서 찾아서 title과 전체 내용을 요약해서 출력해\n출력 예: 제목:title\n-내용:...\n\n입력: {input_text}"}]
+            )
 
-        thread = client.threads.create(
-            messages=[{"role": "user", "content": f"입력 내용과 유사한 책을 첨부 파일에서 찾아서 title과 전체 내용을 요약해서 출력해\n출력 예: 제목:title\n-내용:...\n\n입력: {input_text}"}]
-        )
+            run = openai.Thread.run(thread_id=thread.id, assistant_id=assistant.id)
+            thread_messages = openai.Thread.message_list(thread.id, run_id=run.id)
+            recommended_books = thread_messages.data[0].content[0].text.value
 
-        run = client.threads.runs.create_and_poll(thread_id=thread.id, assistant_id=assistant.id)
-        thread_messages = client.threads.messages.list(thread.id, run_id=run.id)
-        recommended_books = thread_messages.data[0].content[0].text.value
-
-        client.threads.delete(thread.id)
-        client.assistants.delete(assistant.id)
-        client.vector_stores.delete(vector_store.id)
-        
-        return recommended_books
+            openai.Thread.delete(thread.id)
+            openai.Assistant.delete(assistant.id)
+            openai.VectorStore.delete(vector_store.id)
+            
+            return recommended_books
+        except Exception as e:
+            st.error(f"Error occurred: {e}")
+            return None
 
     st.markdown("<div class='header-subtitle'>도서 검색</div>", unsafe_allow_html=True)
     search_title = st.text_input("도서 제목을 입력하세요:", placeholder="예: The Great Gatsby")
     if st.button("검색하기"):
         if search_title:
             book = get_similar_books(search_title)
-            st.write(book)
+            if book:
+                st.write(book)
+            else:
+                st.error("도서를 찾는 중 오류가 발생했습니다.")
         else:
             st.warning("검색어를 입력하세요.")
 
