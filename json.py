@@ -83,7 +83,7 @@ if data:
         return recommended_books
 
     st.header("도서 검색")
-    search_title = st.text_input("도서 제목을 입력하세요:")
+    search_title = st.text_input("도서 제목 혹은 도서의 내용을 입력하세요:")
     if st.button("검색하기"):
         book = get_similar_books(search_title)
         matching_titles = [title for title in titles if search_title.lower() in title.lower()]
