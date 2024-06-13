@@ -44,7 +44,7 @@ if data:
 
         assistant = client.beta.assistants.create(
             instructions= '당신은 사서입니다. 첨부 파일의 정보를 이용해 응답하세요.',
-            model="gpt-4-turbo",
+            model="gpt-4o",
             tools=[{"type": "file_search"}],
             tool_resources={
                 "file_search":{
