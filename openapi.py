@@ -1,6 +1,10 @@
 import streamlit as st
 import json
 from openai import OpenAI
+import shutil
+
+# 이미지 파일을 임시 디렉토리로 복사 (필요한 경우)
+shutil.copy('/mnt/data/image.png', 'images/image.png')
 
 def load_data(file_path):
     try:
@@ -137,7 +141,8 @@ elif menu == "사용법":
 
         1. **OpenAI API Key 입력**: 애플리케이션을 사용하기 위해 OpenAI API Key를 입력하세요.
     """)
-    st.image("/mnt/data/image.png")
+    # 이미지 삽입
+    st.image("images/image.png")
     st.write("""
         2. **도서 검색**:
             - 사이드바에서 '도서 검색' 메뉴를 선택하세요.
@@ -146,8 +151,6 @@ elif menu == "사용법":
             - 각 도서의 제목을 클릭하면 도서의 소개 및 목차 정보를 확인할 수 있습니다.
         3. **사용법 보기**: 애플리케이션 사용법을 확인하려면 사이드바에서 '사용법' 메뉴를 선택하세요.
     """)
-
-
 
 
 
