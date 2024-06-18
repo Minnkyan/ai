@@ -1,6 +1,6 @@
 import streamlit as st
 import json
-import openai
+from openai import OpenAI
 
 def load_data(file_path):
     try:
@@ -13,132 +13,140 @@ def load_data(file_path):
         st.error("JSON 파일을 읽는 중 오류가 발생했습니다.")
         return None
 
-data = load_data('book20.json')
+data = load_data('book100.json')
 
 if data:
     titles = data.get('title', [])
     introduces = data.get('introduce', [])
     tocs = data.get('toc', [])
-    pub_reviews = data.get('pubReview', [])
 
-    st.markdown(
-        """
-        <style>
-        .main {
-            background-color: #f5f5f5;
-        }
-        .stButton>button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 24px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .stButton>button:hover {
-            background-color: #45a049;
-        }
-        .stTextInput>div>div>input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        .stExpander {
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-        .stExpanderHeader {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .stExpanderContent {
-            padding: 10px;
-            font-size: 16px;
-        }
-        .header-title {
-            text-align: center;
-            font-size: 32px;
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .header-subtitle {
-            text-align: center;
-            font-size: 24px;
-            color: #666;
-            margin-bottom: 20px;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+    st.title("도서 검색 웹 애플리케이션")
+    
+    key = search_title = st.text_input("key:")
+    client = OpenAI(api_key=key)
 
-    st.markdown("<div class='header-title'>도서 검색 웹 애플리케이션</div>", unsafe_allow_html=True)
+    def get_similar_books(input):
+        # 파일
+        vector_store = client.beta.vector_stores.create(name="BOOK")
+    
+        file_streams = []
+        for i in range(50):
+            file_streams.append(open(f"books/book{i+1}.json", "rb"))
+    
+        file_batch = client.beta.vector_stores.file_batches.upload_and_poll(
+            vector_store_id=vector_store.id,
+            files=file_streams
+        )
+    
+        Prompt = f'''
+        다음 작업을 수행하시오.
+        1. 첨부 파일에서 세 개의 역따옴표로 구분된 입력 내용과 연관이 있는 내용이 담긴 책을 찾는다.
+        2. 1에서 찾은 책의 title을 csv형식으로 구분자는 '\\n'으로 하고 출력하세요.
+        
+        출력시 출처는 포함하지 마세요.
+        
+        다음 형식으로 출력하시오.
+        title1
+        title2
+        title3
+        
+    
+    
+        입력:
+        ```{input}```
+        '''
+        
+        assistant = client.beta.assistants.create(
+            instructions= '당신은 사서입니다. 첨부 파일의 정보를 이용해 응답하세요.',
+            model="gpt-4o",
+            tools=[{"type": "file_search"}],
+            tool_resources={
+                "file_search":{
+                    "vector_store_ids": [vector_store.id]
+                }
+            }
+        )
+    
+        #thread
+        thread = client.beta.threads.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": Prompt + input,
+                }
+            ]
+        )
+        # 12초
+        run = client.beta.threads.runs.create_and_poll( # 1초에 1회 호출 (분당 100회 제한)
+            thread_id=thread.id,
+            assistant_id=assistant.id
+        )
+    
+        # message
+        thread_messages = client.beta.threads.messages.list(thread.id, run_id=run.id)
+        recommended_books = thread_messages.data[0].content[0].text.value
+        # delete thread
+        response = client.beta.threads.delete(thread.id)
+    
+        # delete assistant
+        response = client.beta.assistants.delete(assistant.id)
+    
+        # delete vector store
+        response = client.beta.vector_stores.delete(vector_store.id)
+    
+        # delete files
+        response = client.files.list(purpose="assistants")
+        for file in response.data:
+            try:
+                client.files.delete(file.id)
+            except:
+                pass
+        
+        return recommended_books
 
-    api_key = st.text_input("OpenAI API Key:", placeholder="API 키를 입력하세요")
-    if not api_key:
-        st.warning("Please enter your OpenAI API key.")
-        st.stop()
+    # 사이드바 메뉴
+menu = st.sidebar.radio("메뉴를 선택하세요", ["도서 검색", "사용법"])
 
-    openai.api_key = api_key
+if menu == "도서 검색":
+    st.header("도서 검색")  
+    search_title = st.text_input("도서 제목 혹은 도서의 내용을 입력하세요:")
 
-    def get_similar_books(input_text):
-        try:
-            vector_store = openai.VectorStore.create(name="BOOK")
-
-            with open('./book20_toc.json', "rb") as file_stream:
-                openai.File.create(file=file_stream, purpose='search')
-
-            assistant = openai.Assistant.create(
-                instructions='당신은 사서입니다. 첨부 파일의 정보를 이용해 응답하세요.',
-                model="gpt-4-turbo",
-                tools=[{"type": "file_search"}],
-                tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}}
-            )
-
-            thread = openai.Thread.create(
-                messages=[{"role": "user", "content": f"입력 내용과 유사한 책을 첨부 파일에서 찾아서 title과 전체 내용을 요약해서 출력해\n출력 예: 제목:title\n-내용:...\n\n입력: {input_text}"}]
-            )
-
-            run = openai.Thread.run(thread_id=thread.id, assistant_id=assistant.id)
-            thread_messages = openai.Thread.message_list(thread.id, run_id=run.id)
-            recommended_books = thread_messages.data[0].content[0].text.value
-
-            openai.Thread.delete(thread.id)
-            openai.Assistant.delete(assistant.id)
-            openai.VectorStore.delete(vector_store.id)
-            
-            return recommended_books
-        except Exception as e:
-            st.error(f"Error occurred: {e}")
-            return None
-
-    st.markdown("<div class='header-subtitle'>도서 검색</div>", unsafe_allow_html=True)
-    search_title = st.text_input("도서 제목을 입력하세요:", placeholder="예: The Great Gatsby")
     if st.button("검색하기"):
-        if search_title:
+        with st.spinner('검색 중 ...'):
             book = get_similar_books(search_title)
-            if book:
-                st.write(book)
-            else:
-                st.error("도서를 찾는 중 오류가 발생했습니다.")
-        else:
-            st.warning("검색어를 입력하세요.")
+        books = book.split('\n')
 
-    st.markdown("<div class='header-subtitle'>전체 도서 목록</div>", unsafe_allow_html=True)
-    for i, title in enumerate(titles):
-        with st.expander(title):
-            st.markdown("<div class='stExpanderHeader'>소개</div>", unsafe_allow_html=True)
-            st.write(introduces[i] if i < len(introduces) else "소개 정보가 없습니다.")
-            st.markdown("<div class='stExpanderHeader'>목차</div>", unsafe_allow_html=True)
-            st.write(tocs[i] if i < len(tocs) else "목차 정보가 없습니다.")
-            st.markdown("<div class='stExpanderHeader'>출판사 리뷰</div>", unsafe_allow_html=True)
-            st.write(pub_reviews[i] if i < len(pub_reviews) else "출판사 리뷰 정보가 없습니다.")
-else:
-    st.error("도서 데이터를 불러오는 중 문제가 발생했습니다.")
+        st.write(f"'{search_title}'에 대한 검색 결과:")
+        
+        books = list(set(books) & set(titles))
+        if books != []:
+            for book in books:
+                index = titles.index(book)
+                with st.expander(book):
+                    st.write("**소개**")
+                    st.write(introduces[index] if introduces[index] != '' else "소개 정보가 없습니다.")
+                    st.write("**목차**")
+                    st.write(tocs[index] if tocs[index] != '' else "목차 정보가 없습니다.")
+        else:
+            st.write('검색 결과가 없습니다. 다시 검색해주세요.')
+
+elif menu == "사용법":
+    st.header("사용법 안내")
+    st.write("""
+        ### 도서 검색 웹 애플리케이션 사용법
+
+        1. **OpenAI API Key 입력**: 애플리케이션을 사용하기 위해 OpenAI API Key를 입력하세요.
+        2. **도서 검색**:
+            - 사이드바에서 '도서 검색' 메뉴를 선택하세요.
+            - 검색하고자 하는 도서 제목 혹은 도서의 내용을 입력하고 '검색하기' 버튼을 클릭하세요.
+            - 검색 결과로 관련 도서 목록이 표시됩니다.
+            - 각 도서의 제목을 클릭하면 도서의 소개 및 목차 정보를 확인할 수 있습니다.
+        3. **사용법 보기**: 애플리케이션 사용법을 확인하려면 사이드바에서 '사용법' 메뉴를 선택하세요.
+    """)
+
+
+
+
 
 
 
