@@ -104,7 +104,8 @@ if data:
         
         return recommended_books
 
-menu = st.sidebar.radio("메뉴를 선택하세요", ["도서 검색", "사용법"])
+    # 사이드바 메뉴
+menu = st.sidebar.radio("메뉴를 선택하세요", ["사용법", "도서 검색"])
 
 if menu == "도서 검색":
     st.header("도서 검색")  
@@ -135,10 +136,23 @@ elif menu == "사용법":
         ### 도서 검색 웹 애플리케이션 사용법
 
         1. **OpenAI API Key 입력**: 애플리케이션을 사용하기 위해 OpenAI API Key를 입력하세요.
+    """)
+    # 이미지 삽입
+    st.image("image.png")
+    st.write("""
         2. **도서 검색**:
             - 사이드바에서 '도서 검색' 메뉴를 선택하세요.
+            """)
+    st.image("image2.png")
+    st.write("""
             - 검색하고자 하는 도서 제목 혹은 도서의 내용을 입력하고 '검색하기' 버튼을 클릭하세요.
+            """)
+    st.image("image3.png")
+    st.write("""
             - 검색 결과로 관련 도서 목록이 표시됩니다.
+            """)
+    st.image("image4.png")
+    st.write("""
             - 각 도서의 제목을 클릭하면 도서의 소개 및 목차 정보를 확인할 수 있습니다.
-        3. **사용법 보기**: 애플리케이션 사용법을 확인하려면 사이드바에서 '사용법' 메뉴를 선택하세요.
-    """)
+            """)
+    st.image("image5.png")
