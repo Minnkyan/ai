@@ -105,7 +105,7 @@ if data:
         return recommended_books
 
     # 사이드바 메뉴
-menu = st.sidebar.radio("메뉴를 선택하세요", ["도서 검색", "사용법"])
+menu = st.sidebar.radio("메뉴를 선택하세요", ["사용법", "도서 검색"])
 
 if menu == "도서 검색":
     st.header("도서 검색")  
