@@ -132,7 +132,7 @@ else:
 
 
 menu = st.sidebar.radio("메뉴를 선택하세요", ["도서 검색", "사용법"])
-    elif menu == "사용법":
+elif menu == "사용법":
     st.header("사용법 안내")
     st.write("""
         ### 도서 검색 웹 애플리케이션 사용법
