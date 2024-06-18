@@ -138,7 +138,7 @@ elif menu == "사용법":
         1. **OpenAI API Key 입력**: 애플리케이션을 사용하기 위해 OpenAI API Key를 입력하세요.
     """)
     # 이미지 삽입
-    st.image("images/image.png")
+    st.image("image.png")
     st.write("""
         2. **도서 검색**:
             - 사이드바에서 '도서 검색' 메뉴를 선택하세요.
