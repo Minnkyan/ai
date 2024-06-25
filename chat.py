@@ -2,15 +2,17 @@ import streamlit as st
 import openai
 
 # OpenAI API 키 설정
-openai.api_key = "sk-proj-GGcJcvRZjvP4I1K8WGoOT3BlbkFJAc9R561FOWTpISLFsFjn"
+openai.api_key = "YOUR_OPENAI_API_KEY"
 
 def get_openai_response(prompt):
-    response = openai.Completion.create(
-        engine="gpt-4o",  # 사용할 엔진 선택
-        prompt=prompt,
-        max_tokens=150  # 응답으로 받을 최대 토큰 수
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",  # 사용할 모델
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ]
     )
-    return response.choices[0].text.strip()
+    return response.choices[0].message['content'].strip()
 
 # 메모리 초기화
 if "messages" not in st.session_state:
