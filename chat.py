@@ -7,9 +7,6 @@ if "api_key" not in st.session_state:
 
 st.session_state.api_key = st.text_input("Enter your OpenAI API Key", type="password")
 
-# OpenAI API 키 설정
-openai.api_key = st.session_state.api_key
-
 # 페이지 설정
 page = st.sidebar.selectbox("Select a page", ["Chat", "Generate Image"])
 
@@ -18,7 +15,7 @@ page = st.sidebar.selectbox("Select a page", ["Chat", "Generate Image"])
 def get_openai_response(api_key, prompt):
     openai.api_key = api_key
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",  # 사용할 모델
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt}
@@ -37,6 +34,8 @@ def generate_dalle_image(api_key, prompt):
     return response['data'][0]['url']
 
 if page == "Chat":
+    st.title("Chat with GPT-3.5-turbo")
+
     # 메모리 초기화
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -48,7 +47,7 @@ if page == "Chat":
             st.markdown(msg["content"])
 
     # 사용자 입력과 LLM 응답
-    if prompt := st.chat_input("What is up?"):
+    if prompt := st.chat_input("Enter your message:"):
         # 사용자 메시지 보여주기
         st.chat_message("user").markdown(prompt)
         
@@ -65,6 +64,8 @@ if page == "Chat":
         st.session_state.messages.append({"role": "assistant", "content": response})
 
 elif page == "Generate Image":
+    st.title("Generate Images with DALL-E")
+
     # 메모리 초기화
     if "image_prompt" not in st.session_state:
         st.session_state.image_prompt = ""
