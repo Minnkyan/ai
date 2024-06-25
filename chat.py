@@ -1,8 +1,5 @@
 import streamlit as st
 import openai
-from streamlit_chat import message
-message(prompt, is_user=True)
-message(response)
 
 # OpenAI API 키 설정
 openai.api_key = "sk-proj-GGcJcvRZjvP4I1K8WGoOT3BlbkFJAc9R561FOWTpISLFsFjn"
