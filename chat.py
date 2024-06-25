@@ -1,4 +1,16 @@
 import streamlit as st
+import openai
+
+# OpenAI API 키 설정
+openai.api_key = "sk-proj-GGcJcvRZjvP4I1K8WGoOT3BlbkFJAc9R561FOWTpISLFsFjn"
+
+def get_openai_response(prompt):
+    response = openai.Completion.create(
+        engine="gpt-4o",  # 사용할 엔진 선택
+        prompt=prompt,
+        max_tokens=150  # 응답으로 받을 최대 토큰 수
+    )
+    return response.choices[0].text.strip()
 
 # 메모리 초기화
 if "messages" not in st.session_state:
@@ -18,8 +30,8 @@ if prompt := st.chat_input("What is up?"):
     # 메모리에 사용자 메시지 저장
     st.session_state.messages.append({"role": "user", "content": prompt})
     
-    # Echo 챗봇 응답
-    response = f"Echo: {prompt}"
+    # LLM 응답 생성
+    response = get_openai_response(prompt)
     
     # LLM 응답 보여주기
     st.chat_message("assistant").markdown(response)
