@@ -2,7 +2,7 @@ import streamlit as st
 import openai
 
 # OpenAI API 키 설정
-openai.api_key = "YOUR_OPENAI_API_KEY"
+openai.api_key = "sk-proj-GGcJcvRZjvP4I1K8WGoOT3BlbkFJAc9R561FOWTpISLFsFjn"
 
 def get_openai_response(prompt):
     response = openai.ChatCompletion.create(
