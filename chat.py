@@ -2,10 +2,8 @@ import streamlit as st
 import openai
 
 # API Key 입력 받기
-if "api_key" not in st.session_state:
-    st.session_state.api_key = ""
-
-st.session_state.api_key = st.text_input("Enter your OpenAI API Key", type="password")
+key = search_title = st.text_input("key:")
+client = OpenAI(api_key=key)
 
 # 페이지 설정
 page = st.sidebar.selectbox("Select a page", ["Chat", "Generate Image"])
