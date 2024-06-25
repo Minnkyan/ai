@@ -1,5 +1,6 @@
 import streamlit as st
 import openai
+from openai import OpenAI
 
 # API Key 입력 받기
 key = search_title = st.text_input("key:")
