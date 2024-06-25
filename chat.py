@@ -11,7 +11,7 @@ page = st.sidebar.selectbox("Select a page", ["Chat", "Generate Image"])
 
 # 캐시된 함수 정의
 @st.cache_data
-def get_openai_response(key, prompt):
+def get_openai_response(api_key, prompt):
     api_key = key
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
