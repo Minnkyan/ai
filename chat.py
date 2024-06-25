@@ -1,5 +1,5 @@
-pip install streamlit
-pip install streamlit-chat
+!pip install streamlit
+!pip install streamlit-chat
 
 import streamlit as st
 from streamlit_chat import message
