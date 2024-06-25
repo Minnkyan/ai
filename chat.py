@@ -13,7 +13,7 @@ page = st.sidebar.selectbox("Select a page", ["Chat", "Generate Image"])
 @st.cache_data
 def get_openai_response(api_key, prompt):
     api_key = key
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
