@@ -9,20 +9,14 @@ client = OpenAI(api_key=key)
 # 페이지 설정
 page = st.sidebar.selectbox("Select a page", ["Chat", "Generate Image"])
 
-# 캐시된 함수 정의
-@st.cache_data
-def get_openai_response(api_key, prompt):
-    api_key = key
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}
-        ]
-    )
-    return response.choices[0].message['content'].strip()
+response = client.chat.completions.create(
+  model="gpt-4-turbo-preview",
+  messages=[
+    {"role": "system", "content": "You are a helpful assistant."},
+  ]
+)
+response
 
-@st.cache_data
 def generate_dalle_image(api_key, prompt):
     api_key = key
     response = openai.Image.create(
