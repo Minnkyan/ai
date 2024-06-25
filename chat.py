@@ -24,7 +24,7 @@ def get_openai_response(key, prompt):
 
 @st.cache_data
 def generate_dalle_image(api_key, prompt):
-    openai.api_key = api_key
+    api_key = key
     response = openai.Image.create(
         prompt=prompt,
         n=1,
