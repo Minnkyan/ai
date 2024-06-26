@@ -60,8 +60,8 @@ elif page == "Generate Image":
   
     st.title("Generate Images with DALL-E")
 response = client.images.generate(
- model="dall-e-3"
- prompt = st.text_input("Enter a prompt for the image")
+ model="dall-e-3",
+ prompt = st.text_input("Enter a prompt for the image"),
  n=1,
  size="1024x1024",
  response_format="url"
