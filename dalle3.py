@@ -72,3 +72,4 @@ elif page == "Image Generator":
             image = generate_image(prompt, api_key)
             if image:
                 st.image(image, caption="Generated Image")
+
