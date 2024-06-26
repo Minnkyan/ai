@@ -49,7 +49,7 @@ elif page == "Image Generator":
     st.title("🖼️ Image Generator")
     prompt = st.text_input("Enter a prompt for the image")
     if prompt:
-        if not openai_api_key:
+        if not api_key:
             st.info("Please enter the API key.")
             st.stop()
 
