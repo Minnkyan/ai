@@ -54,7 +54,7 @@ elif page == "Image Generator":
             st.stop()
 
         # 프롬프트와 API 키로 이미지 생성
-        image = generate_image(prompt, openai_api_key)
+        image = generate_image(prompt, api_key)
         st.image(image, caption="Generated Image")
 
 
