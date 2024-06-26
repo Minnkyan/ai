@@ -10,7 +10,7 @@ st.set_page_config(page_title="Chatbot and Image Generator", layout="wide")
 @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def generate_image(prompt, api_key):
     client = OpenAI(api_key=api_key)
-    response = client.images.generate(prompt=prompt, n=1, size="1024x1024")
+    response = client.images.generate(model="dall-e-3",prompt=prompt,n=1,size="1024x1024")
     image_data = response['data'][0]['url']
     image = Image.open(io.BytesIO(image_data))
     return image
@@ -56,4 +56,6 @@ elif page == "Image Generator":
         # 프롬프트와 API 키로 이미지 생성
         image = generate_image(prompt, openai_api_key)
         st.image(image, caption="Generated Image")
+
+
 
