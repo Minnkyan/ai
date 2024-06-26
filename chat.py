@@ -23,3 +23,13 @@ if prompt := st.chat_input():
     msg = response.choices[0].message.content
     st.session_state.messages.append({"role": "assistant", "content": msg})
     st.chat_message("assistant").write(msg)
+
+def generate_dalle_image(api_key, prompt):
+    api_key = openai_api_key
+response = client.images.generate(
+  model="dall-e-3",
+  prompt = st.text_input("Enter a prompt for the image"),
+  n=1,
+  size="1024x1024"
+)
+st.image
