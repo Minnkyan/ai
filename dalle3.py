@@ -12,7 +12,7 @@ st.set_page_config(page_title="Chatbot and Image Generator", layout="wide")
 def generate_image(prompt, api_key):
     openai.api_key = api_key
     try:
-        response = openai.Image.create(
+        response = client.images.generate(
             prompt=prompt,
             n=1,
             size="1024x1024"
@@ -72,4 +72,3 @@ elif page == "Image Generator":
             image = generate_image(prompt, api_key)
             if image:
                 st.image(image, caption="Generated Image")
-
