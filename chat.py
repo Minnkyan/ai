@@ -8,13 +8,43 @@ client = OpenAI(api_key=key)
 
 # 페이지 설정
 page = st.sidebar.selectbox("Select a page", ["Chat", "Generate Image"])
-assistant = client.beta.assistants.create(
-  name="Chat Bot",
-  instructions="You are a helpful assistant.",
-  tools=[{"type": "code_interpreter"}],
-  model="gpt-4o",
-)
+
 st.title("Generate Images with DALL-E")
+
+def generate_chat(api_key, prompt):
+response = client.chat.completions.create(
+  model="gpt-4-turbo-preview",
+  messages=[
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": st.text_input("Enter a prompt")}
+  ]
+)
+
+if page == "Chat":
+    st.title("Chat with GPT-3.5-turbo")
+
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+      
+    for msg in st.session_state.messages:
+        role = "user" if msg["role"] == "user" else "assistant"
+        with st.chat_message(role):
+            st.markdown(msg["content"])
+
+    if prompt := st.text_input("Enter your message:"):
+
+        st.chat_message("user").markdown(prompt)
+
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        
+        response = get_openai_response(st.session_state.api_key, prompt)
+        
+        # LLM 응답 보여주기
+        st.chat_message("assistant").markdown(response)
+        
+        # 메모리에 LLM 응답 저장
+        st.session_state.messages.append({"role": "assistant", "content": response})
+
 def generate_dalle_image(api_key, prompt):
     api_key = key
 response = client.images.generate(
