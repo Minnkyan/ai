@@ -45,7 +45,7 @@ if page == "Chatbot":
 # 이미지 생성 페이지
 elif page == "Image Generator":
     with st.sidebar:
-        openai_api_key = st.text_input("Dall-E OpenAI API Key", key="dalle_api_key", type="password")
+        api_key = st.text_input("Dall-E OpenAI API Key", key="dalle_api_key", type="password")
     st.title("🖼️ Image Generator")
     prompt = st.text_input("Enter a prompt for the image")
     if prompt:
