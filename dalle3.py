@@ -47,7 +47,7 @@ if page == "Chatbot":
             openai.api_key = api_key
             st.session_state.messages.append({"role": "user", "content": prompt})
             st.chat_message("user").write(prompt)
-            response = openai.Completion.create(
+            response = openai.ChatCompletion.create(
                 model="gpt-4",
                 messages=st.session_state.messages
             )
