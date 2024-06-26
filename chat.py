@@ -57,21 +57,15 @@ if page == "Chat":
         st.session_state.messages.append({"role": "assistant", "content": response})
 
 elif page == "Generate Image":
+  
     st.title("Generate Images with DALL-E")
+response = client.images.generate(
+ model="dall-e-3"
+ prompt = st.text_input("Enter a prompt for the image")
+ n=1,
+ size="1024x1024",
+ response_format="url"
+)
+image_url = response.data[0].url
+st.image(image_url, caption=image_prompt)
 
-    # 메모리 초기화
-    if "image_prompt" not in st.session_state:
-        st.session_state.image_prompt = ""
-
-    # 사용자 프롬프트 입력 받기
-    image_prompt = st.text_input("Enter a prompt for the image")
-
-    if image_prompt:
-        # 메모리에 사용자 프롬프트 저장
-        st.session_state.image_prompt = image_prompt
-        
-        # DALL-E 이미지 생성
-        image_url = generate_dalle_image(st.session_state.api_key, image_prompt)
-        
-        # 생성된 이미지 보여주기
-        st.image(image_url, caption=image_prompt)
